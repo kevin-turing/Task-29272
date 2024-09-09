@@ -1,1 +1,210 @@
-T1IR
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Israel-Palestine Conflict Viz</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body { font-family: Arial; margin: 0; padding: 20px; }
+        .chart { width: 100%; height: 400px; margin-bottom: 30px; }
+        #map { height: 500px; }
+    </style>
+</head>
+<body>
+    <h1>Israel-Palestine Conflict Visualization</h1>
+    
+    <h2>Timeline of Key Events</h2>
+    <div class="chart"><canvas id="timeline"></canvas></div>
+    
+    <h2>Changing Territories</h2>
+    <div id="map" class="chart"></div>
+    
+    <h2>Palestinian Displacement</h2>
+    <div class="chart"><canvas id="displacement"></canvas></div>
+    
+    <h2>Casualties (Oct-Nov 2023)</h2>
+    <div class="chart"><canvas id="casualties"></canvas></div>
+    
+    <h2>Global Involvement</h2>
+    <div class="chart"><canvas id="involvement"></canvas></div>
+    
+    <h2>Human Rights Violations Heatmap</h2>
+    <div class="chart"><canvas id="violations"></canvas></div>
+
+    <script>
+    // Timeline
+    new Chart(document.getElementById('timeline'), {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                data: [
+                    {x: 1881, y: 0, event: "Jewish migration begins"},
+                    {x: 1947, y: 0, event: "UN Partition Plan"},
+                    {x: 1948, y: 0, event: "Israel established, First Arab-Israeli War"},
+                    {x: 1967, y: 0, event: "Six-Day War"},
+                    {x: 2006, y: 0, event: "Last Palestinian election"},
+                    {x: 2023, y: 0, event: "Hamas attack, Israeli response"}
+                ],
+                pointRadius: 10,
+                pointHoverRadius: 15
+            }]
+        },
+        options: {
+            scales: {
+                y: {display: false},
+                x: {type: 'linear', position: 'bottom'}
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (context) => context.raw.event
+                    }
+                }
+            }
+        }
+    });
+
+    // Map
+    const map = L.map('map').setView([31.5, 35], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    
+    const territories = {
+        "1947": [
+            {name: "Proposed Jewish State", color: "#ff9999"},
+            {name: "Proposed Arab State", color: "#99ff99"},
+            {name: "International Zone", color: "#9999ff"}
+        ],
+        "1949": [
+            {name: "Israel", color: "#ff9999"},
+            {name: "West Bank (Jordan)", color: "#99ff99"},
+            {name: "Gaza Strip (Egypt)", color: "#9999ff"}
+        ],
+        "1967": [
+            {name: "Israel", color: "#ff9999"},
+            {name: "Occupied West Bank", color: "#ffcc99"},
+            {name: "Occupied Gaza Strip", color: "#99ccff"}
+        ]
+    };
+
+    Object.entries(territories).forEach(([year, areas]) => {
+        areas.forEach(area => {
+            L.circle([31.5, 35], {
+                color: area.color,
+                fillColor: area.color,
+                fillOpacity: 0.5,
+                radius: 50000
+            }).addTo(map).bindPopup(`${year}: ${area.name}`);
+        });
+    });
+
+    // Displacement
+    new Chart(document.getElementById('displacement'), {
+        type: 'bar',
+        data: {
+            labels: ['1948', '1967', '2023'],
+            datasets: [{
+                label: 'Displaced Palestinians',
+                data: [750000, 72000, 72000],
+                backgroundColor: '#ff9999'
+            }]
+        }
+    });
+
+    // Casualties
+    new Chart(document.getElementById('casualties'), {
+        type: 'pie',
+        data: {
+            labels: ['Palestinian Civilians', 'Israeli Civilians', 'Hamas Militants', 'Israeli Military'],
+            datasets: [{
+                data: [9488, 1200, 1000, 300],
+                backgroundColor: ['#ff9999', '#99ff99', '#9999ff', '#ffff99']
+            }]
+        }
+    });
+
+    // Global Involvement
+    new Chart(document.getElementById('involvement'), {
+        type: 'radar',
+        data: {
+            labels: ['USA', 'UN', 'EU', 'Russia', 'China', 'Arab League'],
+            datasets: [{
+                label: 'Support for Israel',
+                data: [9, 5, 7, 2, 1, 1],
+                fill: true,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgb(255, 99, 132)',
+                pointBackgroundColor: 'rgb(255, 99, 132)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(255, 99, 132)'
+            }, {
+                label: 'Support for Palestine',
+                data: [1, 6, 4, 7, 8, 9],
+                fill: true,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgb(54, 162, 235)',
+                pointBackgroundColor: 'rgb(54, 162, 235)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(54, 162, 235)'
+            }]
+        },
+        options: {
+            elements: {
+                line: { borderWidth: 3 }
+            }
+        }
+    });
+
+    // Human Rights Violations
+    const violationsData = [
+        {x: 'Arbitrary Detention', y: 'Gaza', heat: 80},
+        {x: 'Arbitrary Detention', y: 'West Bank', heat: 90},
+        {x: 'Freedom of Expression', y: 'Gaza', heat: 85},
+        {x: 'Freedom of Expression', y: 'West Bank', heat: 75},
+        {x: 'Forced Displacement', y: 'Gaza', heat: 95},
+        {x: 'Forced Displacement', y: 'West Bank', heat: 85},
+        {x: 'Right to Life', y: 'Gaza', heat: 100},
+        {x: 'Right to Life', y: 'West Bank', heat: 90}
+    ];
+
+    // Human Rights Violations
+    new Chart(document.getElementById('violations'), {
+        type: 'bar',
+        data: {
+            labels: ['Arbitrary Detention', 'Freedom of Expression', 'Forced Displacement', 'Right to Life'],
+            datasets: [{
+                label: 'Gaza',
+                data: [80, 85, 95, 100],
+                backgroundColor: 'rgba(255, 99, 132, 0.7)',
+            }, {
+                label: 'West Bank',
+                data: [90, 75, 85, 90],
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Violation Type'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Severity'
+                    }
+                }
+            }
+        }
+    });
+    </script>
+</body>
+</html>

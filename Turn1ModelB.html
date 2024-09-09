@@ -1,1 +1,149 @@
-T1MB
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Israel-Palestine Conflict Visualization</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+        #map { height: 500px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center">Visualizing the Israel-Palestine Conflict</h1>
+
+    <!-- Timeline Chart -->
+    <div class="chart-container">
+        <canvas id="timelineChart"></canvas>
+    </div>
+
+    <!-- Map of Conflict Areas -->
+    <div id="map"></div>
+
+    <!-- Human Displacement Statistics -->
+    <div class="chart-container">
+        <canvas id="displacementChart"></canvas>
+    </div>
+
+    <!-- Casualties by Demographics -->
+    <div class="chart-container">
+        <canvas id="casualtyChart"></canvas>
+    </div>
+
+    <!-- Heat Map or Geopolitical Involvement Chart -->
+    <div class="chart-container">
+        <canvas id="heatMap"></canvas>
+    </div>
+
+    <!-- Explanation or key events overlay -->
+    <div id="eventExplanation" style="display:none; position: absolute; background: white; padding: 10px; border: 1px solid #ccc;"></div>
+</div>
+
+<script>
+    // Data Preparation
+    const keyEvents = [
+        {year: 1881, event: "Jews started migrating to Palestine"},
+        {year: 1947, event: "UN Partition Plan"},
+        {year: 1948, event: "State of Israel established, First Arab-Israeli War"},
+        {year: 1967, event: "Six-Day War, Israel occupies West Bank and Gaza"},
+        {year: 2006, event: "Last Palestinian Legislative Council election"},
+        {year: 2023, event: "Hamas attack on Israel, subsequent Israeli response"}
+    ];
+
+    // Timeline Chart
+    const ctx = document.getElementById('timelineChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: keyEvents.map(e => e.year),
+            datasets: [{
+                label: 'Key Events in Conflict',
+                data: keyEvents.map((e, i) => ({x: e.year, y: i, r: 10})),
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1,
+                pointRadius: 5,
+                pointHoverRadius: 10
+            }]
+        },
+        options: {
+            scales: { y: { display: false } },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return keyEvents[context.dataIndex].event;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Map Initialization with Leaflet
+    var map = L.map('map').setView([31.5, 34.8], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Adding markers or areas for conflict zones
+    // This would require specific data for boundaries or points of interest
+
+    // Displacement Chart (Bar chart for example)
+    const displacementData = {
+        labels: ['1948', '1967', '2023'],
+        datasets: [{
+            label: 'Number of Displaced Palestinians',
+            data: [750000, 72000, 'Unknown Recent'],
+            backgroundColor: 'rgba(54, 162, 235, 0.5)'
+        }]
+    };
+
+    new Chart(document.getElementById('displacementChart'), {
+        type: 'bar',
+        data: displacementData
+    });
+
+    // Casualty Demographics - Pie Chart or Bar Chart
+    // Data needs to be filled with actual demographics
+    const casualtyData = {
+        labels: ['Children', 'Women', 'Men'],
+        datasets: [{
+            data: [3900, 2430, 'Unknown'], // Example data
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+        }]
+    };
+
+    new Chart(document.getElementById('casualtyChart'), {
+        type: 'pie',
+        data: casualtyData
+    });
+
+    // Heat Map or Geopolitical Involvement
+    // This would typically require a world map or a specific geopolitical map with color coding for involvement level
+
+    // Event Explanation
+    document.querySelectorAll('.chart-container canvas').forEach(canvas => {
+        canvas.onmousemove = function(e) {
+            var rect = e.target.getBoundingClientRect();
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            document.getElementById('eventExplanation').style.display = 'block';
+            document.getElementById('eventExplanation').style.left = e.pageX + 'px';
+            document.getElementById('eventExplanation').style.top = e.pageY + 'px';
+            // Here logic would be needed to determine which event or data point is closest to mouse for context
+        };
+        canvas.onmouseout = function() {
+            document.getElementById('eventExplanation').style.display = 'none';
+        };
+    });
+</script>
+
+</body>
+</html>
