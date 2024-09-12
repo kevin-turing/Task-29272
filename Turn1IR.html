@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Israel-Palestine Conflict Viz</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
@@ -25,13 +24,10 @@
     <h2>Palestinian Displacement</h2>
     <div class="chart"><canvas id="displacement"></canvas></div>
     
-    <h2>Casualties (Oct-Nov 2023)</h2>
+    <h2>Recent Conflict Casualties (Oct-Nov 2023)</h2>
     <div class="chart"><canvas id="casualties"></canvas></div>
     
-    <h2>Global Involvement</h2>
-    <div class="chart"><canvas id="involvement"></canvas></div>
-    
-    <h2>Human Rights Violations Heatmap</h2>
+    <h2>Human Rights Violations</h2>
     <div class="chart"><canvas id="violations"></canvas></div>
 
     <script>
@@ -40,13 +36,14 @@
         type: 'scatter',
         data: {
             datasets: [{
+                label: 'Key Events',
                 data: [
                     {x: 1881, y: 0, event: "Jewish migration begins"},
                     {x: 1947, y: 0, event: "UN Partition Plan"},
                     {x: 1948, y: 0, event: "Israel established, First Arab-Israeli War"},
                     {x: 1967, y: 0, event: "Six-Day War"},
                     {x: 2006, y: 0, event: "Last Palestinian election"},
-                    {x: 2023, y: 0, event: "Hamas attack, Israeli response"}
+                    {x: 2023, y: 0, event: "Oct 7 attack, Israeli response"}
                 ],
                 pointRadius: 10,
                 pointHoverRadius: 15
@@ -55,7 +52,15 @@
         options: {
             scales: {
                 y: {display: false},
-                x: {type: 'linear', position: 'bottom'}
+                x: {
+                    type: 'linear', 
+                    position: 'bottom',
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return value;
+                        }
+                    }
+                }
             },
             plugins: {
                 tooltip: {
@@ -89,13 +94,13 @@
         ]
     };
 
-    Object.entries(territories).forEach(([year, areas]) => {
+    Object.entries(territories).forEach(([year, areas], index) => {
         areas.forEach(area => {
-            L.circle([31.5, 35], {
+            L.circle([31.5 + index*0.5, 35 + index*0.5], {
                 color: area.color,
                 fillColor: area.color,
                 fillOpacity: 0.5,
-                radius: 50000
+                radius: 25000
             }).addTo(map).bindPopup(`${year}: ${area.name}`);
         });
     });
@@ -104,10 +109,10 @@
     new Chart(document.getElementById('displacement'), {
         type: 'bar',
         data: {
-            labels: ['1948', '1967', '2023'],
+            labels: ['1948', '1967'],
             datasets: [{
                 label: 'Displaced Palestinians',
-                data: [750000, 72000, 72000],
+                data: [750000, 72000],
                 backgroundColor: '#ff9999'
             }]
         }
@@ -115,94 +120,27 @@
 
     // Casualties
     new Chart(document.getElementById('casualties'), {
-        type: 'pie',
+        type: 'bar',
         data: {
-            labels: ['Palestinian Civilians', 'Israeli Civilians', 'Hamas Militants', 'Israeli Military'],
+            labels: ['Palestinian', 'Israeli'],
             datasets: [{
-                data: [9488, 1200, 1000, 300],
-                backgroundColor: ['#ff9999', '#99ff99', '#9999ff', '#ffff99']
+                label: 'Casualties',
+                data: [9488, 1200],
+                backgroundColor: ['#ff9999', '#99ff99']
             }]
         }
     });
-
-    // Global Involvement
-    new Chart(document.getElementById('involvement'), {
-        type: 'radar',
-        data: {
-            labels: ['USA', 'UN', 'EU', 'Russia', 'China', 'Arab League'],
-            datasets: [{
-                label: 'Support for Israel',
-                data: [9, 5, 7, 2, 1, 1],
-                fill: true,
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                borderColor: 'rgb(255, 99, 132)',
-                pointBackgroundColor: 'rgb(255, 99, 132)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgb(255, 99, 132)'
-            }, {
-                label: 'Support for Palestine',
-                data: [1, 6, 4, 7, 8, 9],
-                fill: true,
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgb(54, 162, 235)',
-                pointBackgroundColor: 'rgb(54, 162, 235)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgb(54, 162, 235)'
-            }]
-        },
-        options: {
-            elements: {
-                line: { borderWidth: 3 }
-            }
-        }
-    });
-
-    // Human Rights Violations
-    const violationsData = [
-        {x: 'Arbitrary Detention', y: 'Gaza', heat: 80},
-        {x: 'Arbitrary Detention', y: 'West Bank', heat: 90},
-        {x: 'Freedom of Expression', y: 'Gaza', heat: 85},
-        {x: 'Freedom of Expression', y: 'West Bank', heat: 75},
-        {x: 'Forced Displacement', y: 'Gaza', heat: 95},
-        {x: 'Forced Displacement', y: 'West Bank', heat: 85},
-        {x: 'Right to Life', y: 'Gaza', heat: 100},
-        {x: 'Right to Life', y: 'West Bank', heat: 90}
-    ];
 
     // Human Rights Violations
     new Chart(document.getElementById('violations'), {
         type: 'bar',
         data: {
-            labels: ['Arbitrary Detention', 'Freedom of Expression', 'Forced Displacement', 'Right to Life'],
+            labels: ['Arbitrary Detention', 'Freedom of Expression', 'Forced Displacement'],
             datasets: [{
-                label: 'Gaza',
-                data: [80, 85, 95, 100],
-                backgroundColor: 'rgba(255, 99, 132, 0.7)',
-            }, {
-                label: 'West Bank',
-                data: [90, 75, 85, 90],
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                label: 'Reported Violations',
+                data: [200, 100, 72000],
+                backgroundColor: '#ff9999'
             }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Violation Type'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Severity'
-                    }
-                }
-            }
         }
     });
     </script>
