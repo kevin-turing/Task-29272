@@ -2,33 +2,113 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Israel-Palestine Conflict Viz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Israel-Palestine Conflict Visualization</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial; margin: 0; padding: 20px; }
-        .chart { width: 100%; height: 400px; margin-bottom: 30px; }
-        #map { height: 500px; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        h1 {
+            margin-bottom: 40px;
+            font-size: 2.5em;
+        }
+        h2 {
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .chart-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+        .chart {
+            width: 100%;
+            height: 300px;
+        }
+        #map {
+            height: 400px;
+        }
+        #heatmap {
+            align-self: center;
+            width:auto;
+            height: auto;
+            
+        }
+        .info-cont{
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Israel-Palestine Conflict Visualization</h1>
-    
-    <h2>Timeline of Key Events</h2>
-    <div class="chart"><canvas id="timeline"></canvas></div>
-    
-    <h2>Changing Territories</h2>
-    <div id="map" class="chart"></div>
-    
-    <h2>Palestinian Displacement</h2>
-    <div class="chart"><canvas id="displacement"></canvas></div>
-    
-    <h2>Recent Conflict Casualties (Oct-Nov 2023)</h2>
-    <div class="chart"><canvas id="casualties"></canvas></div>
-    
-    <h2>Human Rights Violations</h2>
-    <div class="chart"><canvas id="violations"></canvas></div>
+    <div class="container">
+        <h1>Israel-Palestine Conflict Visualization</h1>
+        
+        <div class="grid">
+            <div class="chart-container">
+                <h2>Timeline of Key Events</h2>
+                <h6 class="info-cont">Hover to see more</h6>
+                <div class="chart"><canvas id="timeline"></canvas></div>
+            </div>
+            
+            <div class="chart-container">
+                <h2>Changing Territories</h2>
+                <div id="map" class="chart"></div>
+            </div>
+            
+            <div class="chart-container">
+                <h2>Palestinian Displacement</h2>
+                <div class="chart"><canvas id="displacement"></canvas></div>
+            </div>
+            
+            <div class="chart-container">
+                <h2>Recent Conflict Casualties (Oct-Nov 2023)</h2>
+                <div class="chart"><canvas id="casualties"></canvas></div>
+            </div>
+            
+            <div class="chart-container">
+                <h2>Human Rights Violations Heatmap</h2>
+                <div id="heatmap" class="chart"></div>
+            </div>
+
+            <div class="chart-container">
+                <h2>Demographic Pyramid</h2>
+                <div class="chart"><canvas id="demoPyramid"></canvas></div>
+            </div>
+        </div>
+    </div>
 
     <script>
     // Timeline
@@ -45,11 +125,14 @@
                     {x: 2006, y: 0, event: "Last Palestinian election"},
                     {x: 2023, y: 0, event: "Oct 7 attack, Israeli response"}
                 ],
-                pointRadius: 10,
-                pointHoverRadius: 15
+                pointRadius: 8,
+                pointHoverRadius: 12,
+                backgroundColor: '#3498db'
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {display: false},
                 x: {
@@ -65,8 +148,11 @@
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: (context) => context.raw.event
+                        label: (context) => `${context.raw.x}: ${context.raw.event}`
                     }
+                },
+                legend: {
+                    display: false
                 }
             }
         }
@@ -78,19 +164,19 @@
     
     const territories = {
         "1947": [
-            {name: "Proposed Jewish State", color: "#ff9999"},
-            {name: "Proposed Arab State", color: "#99ff99"},
-            {name: "International Zone", color: "#9999ff"}
+            {name: "Proposed Jewish State", color: "#3498db"},
+            {name: "Proposed Arab State", color: "#2ecc71"},
+            {name: "International Zone", color: "#9b59b6"}
         ],
         "1949": [
-            {name: "Israel", color: "#ff9999"},
-            {name: "West Bank (Jordan)", color: "#99ff99"},
-            {name: "Gaza Strip (Egypt)", color: "#9999ff"}
+            {name: "Israel", color: "#3498db"},
+            {name: "West Bank (Jordan)", color: "#2ecc71"},
+            {name: "Gaza Strip (Egypt)", color: "#9b59b6"}
         ],
         "1967": [
-            {name: "Israel", color: "#ff9999"},
-            {name: "Occupied West Bank", color: "#ffcc99"},
-            {name: "Occupied Gaza Strip", color: "#99ccff"}
+            {name: "Israel", color: "#3498db"},
+            {name: "Occupied West Bank", color: "#e67e22"},
+            {name: "Occupied Gaza Strip", color: "#1abc9c"}
         ]
     };
 
@@ -113,8 +199,17 @@
             datasets: [{
                 label: 'Displaced Palestinians',
                 data: [750000, 72000],
-                backgroundColor: '#ff9999'
+                backgroundColor: '#e74c3c'
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
         }
     });
 
@@ -126,23 +221,171 @@
             datasets: [{
                 label: 'Casualties',
                 data: [9488, 1200],
-                backgroundColor: ['#ff9999', '#99ff99']
+                backgroundColor: ['#e74c3c', '#3498db']
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
         }
     });
 
-    // Human Rights Violations
-    new Chart(document.getElementById('violations'), {
-        type: 'bar',
-        data: {
-            labels: ['Arbitrary Detention', 'Freedom of Expression', 'Forced Displacement'],
-            datasets: [{
-                label: 'Reported Violations',
-                data: [200, 100, 72000],
-                backgroundColor: '#ff9999'
-            }]
+// Human Rights Violations Heatmap
+const violations = [
+    {year: 2020, type: "Arbitrary Detention", count: 200},
+    {year: 2021, type: "Arbitrary Detention", count: "NO DATA"},
+    {year: 2022, type: "Arbitrary Detention", count: "NO DATA"},
+    {year: 2020, type: "Freedom of Expression", count: "NO DATA"},
+    {year: 2021, type: "Freedom of Expression", count: "NO DATA"},
+    {year: 2022, type: "Freedom of Expression", count: "NO DATA"},
+    {year: 2020, type: "Forced Displacement", count: "NO DATA"},
+    {year: 2021, type: "Forced Displacement", count: "NO DATA"},
+    {year: 2022, type: "Forced Displacement", count: 72000}
+];
+
+const margin = {top: 40, right: 40, bottom: 60, left: 120},
+      width = document.getElementById('heatmap').offsetWidth - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+const svg = d3.select("#heatmap")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+const x = d3.scaleBand()
+    .range([0, width])
+    .domain(violations.map(d => d.year))
+    .padding(0.05);
+svg.append("g")
+    .attr("transform", `translate(0, ${height})`)
+    .call(d3.axisBottom(x))
+    .selectAll("text")
+    .style("text-anchor", "end")
+    .attr("dx", "-.8em")
+    .attr("dy", ".15em")
+    .attr("transform", "rotate(-45)");
+
+const y = d3.scaleBand()
+    .range([height, 0])
+    .domain(violations.map(d => d.type))
+    .padding(0.05);
+svg.append("g")
+    .call(d3.axisLeft(y));
+
+const colorScale = d3.scaleOrdinal()
+    .domain(["NO DATA", ...d3.range(1, d3.max(violations, d => typeof d.count === 'number' ? d.count : 0) + 1)])
+    .range(["#cccccc", ...d3.schemeYlOrRd[9]]);
+
+svg.selectAll()
+    .data(violations)
+    .enter()
+    .append("rect")
+    .attr("x", d => x(d.year))
+    .attr("y", d => y(d.type))
+    .attr("width", x.bandwidth())
+    .attr("height", y.bandwidth())
+    .style("fill", d => d.count === "NO DATA" ? colorScale("NO DATA") : colorScale(d.count));
+
+// Add labels
+svg.selectAll()
+    .data(violations)
+    .enter()
+    .append("text")
+    .attr("x", d => x(d.year) + x.bandwidth() / 2)
+    .attr("y", d => y(d.type) + y.bandwidth() / 2)
+    .attr("dy", ".35em")
+    .attr("text-anchor", "middle")
+    .text(d => d.count)
+    .style("fill", d => d.count === "NO DATA" ? "black" : "white")
+    .style("font-size", "12px");
+
+// Demographic Pyramid
+const demoPyramidCtx = document.getElementById('demoPyramid').getContext('2d');
+new Chart(demoPyramidCtx, {
+    type: 'bar',
+    data: {
+        labels: ['0-14', '15-24', '25-54', '55-64', '65+'],
+        datasets: [{
+            label: 'Male',
+            data: [0, 0, 0, 0, 0],
+            backgroundColor: 'rgba(52, 152, 219, 0.7)'
+        }, {
+            label: 'Female',
+            data: [0, 0, 0, 0, 0],
+            backgroundColor: 'rgba(231, 76, 60, 0.7)'
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                stacked: true,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            },
+            y: {
+                stacked: true
+            }
+        },
+        plugins: {
+            tooltip: {
+                enabled: false
+            },
+            legend: {
+                display: false
+            }
         }
-    });
+    }
+});
+
+// Add blur overlay and message
+const demoPyramidCanvas = document.getElementById('demoPyramid');
+const overlayDiv = document.createElement('div');
+overlayDiv.style.position = 'absolute';
+overlayDiv.style.top = '0';
+overlayDiv.style.left = '0';
+overlayDiv.style.width = '100%';
+overlayDiv.style.height = '100%';
+overlayDiv.style.display = 'flex';
+overlayDiv.style.justifyContent = 'center';
+overlayDiv.style.alignItems = 'center';
+overlayDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+overlayDiv.style.backdropFilter = 'blur(5px)';
+overlayDiv.style.zIndex = '10';
+
+const messageP = document.createElement('p');
+messageP.textContent = 'NOT ENOUGH DATA TO RENDER THIS CHART';
+messageP.style.fontWeight = 'bold';
+messageP.style.fontSize = '16px';
+messageP.style.textAlign = 'center';
+messageP.style.color = '#333';
+
+overlayDiv.appendChild(messageP);
+
+// Ensure the chart's container is position: relative
+demoPyramidCanvas.parentNode.style.position = 'relative';
+demoPyramidCanvas.parentNode.appendChild(overlayDiv);
+
+// Adjust the size of the overlay when the window is resized
+window.addEventListener('resize', function() {
+    overlayDiv.style.width = demoPyramidCanvas.offsetWidth + 'px';
+    overlayDiv.style.height = demoPyramidCanvas.offsetHeight + 'px';
+});
+
+// Trigger a resize event to set the initial size
+window.dispatchEvent(new Event('resize'));
     </script>
 </body>
 </html>
